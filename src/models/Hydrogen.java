@@ -6,7 +6,7 @@ public class Hydrogen {
     private int hydrogens;
 
     /**
-     * Default Oxygen Constructor
+     * Default Hydrogen Constructor
      * @param hydrogens
      */
     public Hydrogen(int hydrogens) {
@@ -16,9 +16,9 @@ public class Hydrogen {
     public static void main(String[] args) throws IOException {
         Console console = new Console();
 
-        int hydrogens = console.input("Enter the number of Oxygen atoms: ").nextInt();
+        int hydrogens = console.input("Enter the number of Hydrogen atoms: ").nextInt();
 
-        // Create a new Oxygen
+        // Create a new Hydrogen
         new Hydrogen(hydrogens);
     }
 }
