@@ -147,7 +147,7 @@ public class Console {
     * @param value - The value to log.
     */
     public void log(Object value) {
-        System.out.print(formatMessage((String) value));
+        System.out.print(formatMessage((String) value) + "\n");
     }
 
     /**
