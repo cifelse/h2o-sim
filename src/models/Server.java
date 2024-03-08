@@ -36,30 +36,6 @@ public class Server implements Modem {
         new Thread(new HydrogenHandler()).start();
     }
 
-    public void bond() {
-        try {
-            // Get the Oxygen and Hydrogen atoms
-            Socket oxygen = this.oxygen.take();
-            Socket hydrogen = this.hydrogen.take();
-            Socket hydrogen2 = this.hydrogen.take();
-
-            // Notify the Oxygen and Hydrogen atoms
-            DataOutputStream out = new DataOutputStream(oxygen.getOutputStream());
-            out.writeUTF("[Master]: You are successfully connected. Wait for instructions.");
-            out.flush();
-
-            out = new DataOutputStream(hydrogen.getOutputStream());
-            out.writeUTF("[Master]: You are successfully connected. Wait for instructions.");
-            out.flush();
-
-            // Notify the Server
-            console.log("Oxygen and Hydrogen atoms are successfully connected.");
-        }
-        catch (IOException | InterruptedException e) {
-            console.log(e);
-        }
-    }
-
     /**
      * The Class for handling Oxygen requests
      */
