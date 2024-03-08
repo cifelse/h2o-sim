@@ -139,7 +139,7 @@ public class Console {
     * @param args - Arguments for string formatting (similar to printf).
     */
     public void log(String message, Object... args) {
-        System.out.printf("%s", String.format(formatMessage(message), args));
+        System.out.printf("%s\n", String.format(formatMessage(message), args));
     }
 
     /**
@@ -173,6 +173,9 @@ public class Console {
     * @return - the formatted String
     */
     private String formatMessage(String message) {
+        if (message.length() > 0 && message.charAt(0) == '[')
+            return message;
+
         String header = this.name.length() < 1 ? "" : "[" + name + "]: ";
 
         // Only check \n in the first element of the string:
