@@ -35,11 +35,19 @@ public interface Modem {
      * @param socket - the socket of the server
      * @param element - The Element
      * @throws Exception
+     * @return true if the bonding is successful
      */
-    default public void request(Socket socket, String element) throws Exception {
-        DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-        out.writeUTF(element);
-        out.flush();
+    default public boolean request(Socket socket, String element) {
+        try {
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.writeUTF(element);
+            out.flush();
+            return true;
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
     }
 
     /**
