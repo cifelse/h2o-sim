@@ -6,6 +6,8 @@
 
 package models;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
@@ -86,6 +88,18 @@ public class Console {
     }
 
     /**
+     * Return a timestamp
+     * @return timestamp
+     */
+    public String getTimestamp() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss"));
+    }
+
+    public String getTimeStamp(String pattern) {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    /**
      * Get the name of the Console
      * @return the name of the Console
      */
@@ -145,6 +159,10 @@ public class Console {
         }
     }
 
+    /**
+     * Print a Title
+     * @param title - The Title
+     */
     public void title(String title) {
         System.out.println("██████████████████ " + title + " ██████████████████\n");
     }
@@ -183,6 +201,9 @@ public class Console {
         this.headers.remove(index);
     }
 
+    /**
+     * The main print statement when Headers are present.
+     */
     private void print() {
         clear();
 
