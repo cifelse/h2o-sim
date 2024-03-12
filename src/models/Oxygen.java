@@ -1,8 +1,5 @@
 package models;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
 public class Oxygen implements Runnable, Modem {
@@ -12,43 +9,41 @@ public class Oxygen implements Runnable, Modem {
     // The Number of Oxygens to send
     private int oxygens;
 
-    // Create a new Console
-    private Console console;
+    /**
+     * Create an Oxygen Client with 2^20 Oxygen Molecules.
+     */
+    public Oxygen() {
+        this.oxygens = (int) Math.pow(2, 20);
+    }
 
     /**
-     * Default Oxygen Constructor
+     * Create an Oxygen Client with N Oxygen Molecules.
      */
     public Oxygen(int oxygens) {
         this.oxygens = oxygens;
-        this.console = new Console("Oxygen Client");
     }
 
     @Override
     public void run() {
+        Console console = new Console("Oyxgen Client");
+
         try {
-            Socket socket = new Socket(HOSTNAME, Server.HYDROGEN_PORT);
+            console.log("Connecting to the Server");
 
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            // Connect to the Server
+            Socket socket = new Socket(HOSTNAME, Server.OXYGEN_PORT);
 
-            // Receive Connection Confirmation
-            String message = receive(in);
+            // Listen to any response from the Server
+            listen(socket, console);
 
-            // Notify the Server how many Hydrogens are there
-            broadcast(out, this.oxygens);
-
-            // Log all messages sent by the Server until EOM
-            while (!message.contains("EOM")) {
-                console.log(message);
-
-                // Receive the next message
-                message = receive(in);
+            // Submit all Oxygens to the Server
+            for (int i = 1; i <= this.oxygens; i++) {
+                System.out.println("O" + i + ", request, " + console.getTimestamp());
+                broadcast(socket, "O" + i);
             }
-
-            socket.close();
         }
         catch (Exception e) {
-            console.log("Server died. Error found: " + e.getMessage());
+            System.out.println(e);
         }
     }
 
@@ -57,13 +52,11 @@ public class Oxygen implements Runnable, Modem {
      * @param args - The Command Line Arguments
      * @throws Exception
      */
-    public static void main(String[] args) throws IOException {
-        Console console = new Console();
-
+    public static void main(String[] args) throws Exception {
         // Ask the user for the number of Oxygens
-        int oxygens = console.input("Enter the number of Oxygen atoms: ").nextInt();
+        int oxygens = new Console().input("Enter the number of Oxygen atoms: ").nextInt();
 
         // Create a new Oxygen Client
-        new Thread(new Oxygen(oxygens)).start();
+        new Oxygen(oxygens).run();
     }
 }

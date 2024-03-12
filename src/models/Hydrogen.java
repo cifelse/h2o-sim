@@ -1,8 +1,5 @@
 package models;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 
 public class Hydrogen implements Runnable, Modem {
@@ -12,43 +9,41 @@ public class Hydrogen implements Runnable, Modem {
     // The Number of Hydrogens to send
     private int hydrogens;
 
-    // Create a new Console
-    private Console console;
+    /**
+     * Create a Hydrogen Client with 2 * 2^20 Hydrogen Molecules.
+     */
+    public Hydrogen() {
+        this.hydrogens = 2 * (int) Math.pow(2, 20);
+    }
 
     /**
-     * Default Hydrogen Constructor
+     * Create an Hydrogen Client with N Hydrogen Molecules.
      */
     public Hydrogen(int hydrogens) {
         this.hydrogens = hydrogens;
-        this.console = new Console("Hydrogen Client");
     }
 
     @Override
     public void run() {
+        Console console = new Console("Hydrogen Client");
+
         try {
+            console.log("Connecting to the Server.");
+
+            // Connect to the Server
             Socket socket = new Socket(HOSTNAME, Server.HYDROGEN_PORT);
 
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            // Listen to any response from the Server
+            listen(socket, console);
 
-            // Receive Connection Confirmation
-            String message = receive(in);
-
-            // Notify the Server how many Hydrogens are there
-            broadcast(out, this.hydrogens);
-
-            // Log all messages sent by the Server until EOM
-            while (!message.contains("EOM")) {
-                console.log(message);
-
-                // Receive the next message
-                message = receive(in);
+            // Submit all Hydrogens to the Server
+            for (int i = 1; i <= this.hydrogens; i++) {
+                console.log("H" + i + ", request, " + console.getTimestamp());
+                broadcast(socket, "H" + i);
             }
-
-            socket.close();
         }
         catch (Exception e) {
-            console.log("Server died. Error found: " + e.getMessage());
+            System.out.println(e);
         }
     }
 
@@ -57,13 +52,11 @@ public class Hydrogen implements Runnable, Modem {
      * @param args - The Command Line Arguments
      * @throws Exception
      */
-    public static void main(String[] args) throws IOException {
-        Console console = new Console();
-
+    public static void main(String[] args) throws Exception {
         // Ask the user for the number of Hydrogens
-        int hydrogens = console.input("Enter the number of Hydrogen atoms: ").nextInt();
+        int hydrogens = new Console().input("Enter the number of Hydrogen atoms: ").nextInt();
 
         // Create a new Hydrogen Client
-        new Thread(new Hydrogen(hydrogens)).start();
+        new Hydrogen(hydrogens).run();
     }
 }
