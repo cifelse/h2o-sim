@@ -39,15 +39,18 @@ public class Oxygen implements Runnable, Modem {
             // Listen to any response from the Server
             console.listen(socket, "O" + this.oxygens);
 
+            // The Flag to check if the Server is still accepting requests
+            boolean flag = true;
+
             // Submit all Oxygens to the Server
-            for (int i = 1; i <= this.oxygens; i++) {
+            for (int i = 1; i <= this.oxygens && flag; i++) {
                 String element = "O" + i;
                 
                 // Log each request on the Client side
                 console.log(element + ", request, " + console.getTimestamp());
 
                 // Request for bonding to the Server through the Modem
-                request(socket, element);
+                flag = request(socket, element);
             }
         }
         catch (Exception e) {
