@@ -2,7 +2,8 @@ package models;
 
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * The Server Class that is responsible in handling the Oxygen and Hydrogen atoms
@@ -19,10 +20,10 @@ public class Server implements Modem {
     private final Console console;
 
     // Create a Queue for the Oxygens
-    private ArrayList<Element> oxygens;
+    private Queue<Element> oxygens;
 
     // Create a Queue for the Hydrogens
-    private ArrayList<Element> hydrogens;
+    private Queue<Element> hydrogens;
 
     /**
      * Default Server Constructor
@@ -32,13 +33,34 @@ public class Server implements Modem {
         this.console = new Console(NAME);
 
         // Instantiate Elements
-        this.hydrogens = new ArrayList<Element>();
-        this.oxygens = new ArrayList<Element>();
+        this.hydrogens = new LinkedList<Element>();
+        this.oxygens = new LinkedList<Element>();
 
         // Start the Oxygen Handler
         new Thread(new OxygenHandler(Server.OXYGEN_PORT)).start();
         // Start the Hydrogen Handler
         new Thread(new HydrogenHandler(Server.HYDROGEN_PORT)).start();
+    }
+
+    /**
+     * The Centralized Function to Bond Hydrogens and Oxygens
+     * @throws Exception
+     */
+    public void bond() throws Exception {
+        // If Hydrogens and Oxygens are not enough, abort
+        if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return;
+
+        synchronized(this.hydrogens) {
+            Element h1 = this.hydrogens.poll();
+            console.log(h1.bond(console.getTimestamp()));
+            Element h2 = this.hydrogens.poll();
+            console.log(h2.bond(console.getTimestamp()));
+        }
+        
+        synchronized(this.oxygens) {
+            Element o = this.oxygens.poll();
+            console.log(o.bond(console.getTimestamp()));
+        }
     }
 
     /**
@@ -76,10 +98,13 @@ public class Server implements Modem {
                     String element = receive(socket);
 
                     // Add the element to the ArrayList
-                    oxygens.add(new Element(element));
+                    oxygens.add(new Element(element, socket));
 
                     // Log the Request
                     console.log(element + ", request, " + console.getTimestamp());
+
+                    // Check if bonding is possible
+                    bond();
                 }
             }
             catch (Exception e) {
@@ -122,10 +147,13 @@ public class Server implements Modem {
                     String element = receive(socket);
 
                     // Add the element to the ArrayList
-                    hydrogens.add(new Element(element));
+                    hydrogens.add(new Element(element, socket));
 
                     // Log the Request
                     console.log(element + ", request, " + console.getTimestamp());
+
+                    // Check if bonding is possible
+                    bond();
                 }
             }
             catch (Exception e) {
