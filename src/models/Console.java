@@ -1,11 +1,14 @@
 /**
  * A custom Console class to easily access the cmd/console
  * @author Louis Lemsic
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 package models;
 
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.net.Socket;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -88,13 +91,16 @@ public class Console {
     }
 
     /**
-     * Return a timestamp
+     * Return the current timestamp in String
      * @return timestamp
      */
     public String getTimestamp() {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss"));
     }
 
+    /**
+     * Return the current timestamp in String with a certain pattern
+     */
     public String getTimeStamp(String pattern) {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern));
     }
@@ -165,6 +171,14 @@ public class Console {
      */
     public void title(String title) {
         System.out.println("██████████████████ " + title + " ██████████████████\n");
+    }
+
+    /**
+     * Print a Title with a custom border
+     * @param title - The Title
+     */
+    public void title(String title, String border) {
+        System.out.println(border + " " + title + " " + border + "\n");
     }
 
     /**
@@ -250,7 +264,10 @@ public class Console {
      */
     public void log(Object value) {
         if (this.headers.isEmpty()) {
-            System.out.printf("%s\n", formatMessage((String) value));
+            if (value instanceof String)
+                System.out.printf("%s\n", formatMessage((String) value));
+            else
+                System.out.println(value);
         }
         else {
             addBody(formatMessage((String) value));
@@ -293,7 +310,7 @@ public class Console {
 
     /**
      * The main function that is responsible in the format of the console logs
-     * @param message String to be formatted
+     * @param message - String to be formatted
      * @return - the formatted String
      */
     private String formatMessage(String message) {
@@ -307,5 +324,24 @@ public class Console {
             return (message.contains("\n") ? "\n" + header : header) + message.replaceFirst("\n", "");
 
         return header + message;
+    }
+
+    /**
+     * Listen to a socket for all String outputs
+     * @param socket - Socket to listen
+     */
+    public void listen(Socket socket) {
+        new Thread(() -> {
+            try {
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                while (true) log(in.readUTF());
+            }
+            catch (Exception e) {
+                if (e instanceof EOFException)
+                    log("Server died.");
+                else
+                    log(e);
+            }
+        }).start();
     }
 }
