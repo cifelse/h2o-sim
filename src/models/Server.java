@@ -1,5 +1,6 @@
 package models;
 
+import java.io.EOFException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -78,13 +79,12 @@ public class Server implements Modem {
          */
         public OxygenHandler(int port) throws Exception {
             this.port = port;
+            this.serverSocket = new ServerSocket(this.port);
         }
 
         @Override
         public void run() {
-            try {
-                this.serverSocket = new ServerSocket(this.port);
-
+            while (true) try {
                 // Accept new Hydrogen Clients
                 console.log("Listening for new Oxygen atoms at port %d.", this.port);
 
@@ -93,7 +93,7 @@ public class Server implements Modem {
                 // Send Confirmation
                 broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
                 
-                while (true) {
+                while (!socket.isClosed()) try {
                     // Receive the Element name
                     String element = receive(socket);
 
@@ -105,6 +105,14 @@ public class Server implements Modem {
 
                     // Check if bonding is possible
                     bond();
+                }
+                catch (Exception e) {
+                    if (e instanceof EOFException) 
+                        console.log("Oxygen Client disconnected.");
+                    else 
+                        console.log(e);
+
+                    if (!socket.isClosed()) socket.close();
                 }
             }
             catch (Exception e) {
@@ -125,15 +133,14 @@ public class Server implements Modem {
         /**
          * Default HydrogenHandler Constructor
          */
-        public HydrogenHandler(int port) {
+        public HydrogenHandler(int port) throws Exception {
             this.port = port;
+            this.serverSocket = new ServerSocket(this.port);
         }
 
         @Override
         public void run() {
-            try {
-                this.serverSocket = new ServerSocket(this.port);
-
+            while (true) try {
                 // Accept new Hydrogen Clients
                 console.log("Listening for new Hydrogen atoms at port %d.", this.port);
 
@@ -142,7 +149,7 @@ public class Server implements Modem {
                 // Send Confirmation
                 broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
 
-                while (true) {
+                while (!socket.isClosed()) try {
                     // Receive the Element name
                     String element = receive(socket);
 
@@ -154,6 +161,14 @@ public class Server implements Modem {
 
                     // Check if bonding is possible
                     bond();
+                }
+                catch (Exception e) {
+                    if (e instanceof EOFException) 
+                        console.log("Hydrogen Client disconnected.");
+                    else 
+                        console.log(e);
+
+                    if (!socket.isClosed()) socket.close();
                 }
             }
             catch (Exception e) {
