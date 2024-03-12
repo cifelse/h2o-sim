@@ -329,19 +329,59 @@ public class Console {
     /**
      * Listen to a socket for all String outputs
      * @param socket - Socket to listen
+     * @param endSignal - End Signal Message for the Thread
      */
-    public void listen(Socket socket) {
+    public void listen(Socket socket, String endSignal) {
         new Thread(() -> {
             try {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
-                while (true) log(in.readUTF());
+                
+                String message;
+                do {
+                    message = in.readUTF();
+                    log(message);
+                } while (!message.contains(endSignal));
+                
+                log("All elements have bonded.");
+                
+                if (!socket.isClosed()) socket.close();
             }
             catch (Exception e) {
                 if (e instanceof EOFException)
                     log("Server died.");
                 else
-                    log(e);
+                    log(e);       
             }
+            
+        }).start();
+    }
+
+    /**
+     * Listen to a socket for all String outputs
+     * @param socket - Socket to listen
+     */
+    public void listen(Socket socket) {
+        new Thread(() -> {
+            try {
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                
+                String message;
+                do {
+                    message = in.readUTF();
+                    log(message);
+                } while (message != "END");
+                
+                log("All elements have bonded.");
+                
+                if (!socket.isClosed()) socket.close();
+            }
+            catch (Exception e) {
+                if (e instanceof EOFException)
+                    log("Server died.");
+                else
+                    log(e);       
+            }
+            
         }).start();
     }
 }
