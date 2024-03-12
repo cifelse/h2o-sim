@@ -13,8 +13,13 @@ public interface Modem {
      * @throws Exception
      */
     default public void broadcast(Socket socket, String message, String alias) throws Exception {
+        // Change the message to include the alias
+        message = "[" + alias + "]: " + message;
+
         DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-        out.writeUTF("[" + alias + "]: " + message);
+
+        out.writeInt(message.getBytes().length);
+        out.write(message.getBytes());
         out.flush();
     }
 
@@ -26,7 +31,9 @@ public interface Modem {
      */
     default public void broadcast(Socket socket, String message) throws Exception {
         DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-        out.writeUTF(message);
+        
+        out.writeInt(message.getBytes().length);
+        out.write(message.getBytes());
         out.flush();
     }
 
@@ -40,12 +47,15 @@ public interface Modem {
     default public boolean request(Socket socket, String element) {
         try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeUTF(element);
+        
+            out.writeInt(element.getBytes().length);
+            out.write(element.getBytes());
             out.flush();
+
             return true;
         }
         catch (Exception e) {
-            System.out.println(e.getMessage());
+            System.out.println(e.getLocalizedMessage());
             return false;
         }
     }
@@ -58,7 +68,12 @@ public interface Modem {
      */
     default public String receive(Socket socket) throws Exception {
         DataInputStream in = new DataInputStream(socket.getInputStream());
-        return in.readUTF();
+
+        int length = in.readInt();
+        byte[] data = new byte[length];
+        in.readFully(data);
+
+        return new String(data);
     }
 }
 
