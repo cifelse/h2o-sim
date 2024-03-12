@@ -40,11 +40,11 @@ public class Oxygen implements Runnable, Modem {
             for (int i = 1; i <= this.oxygens; i++) {
                 String element = "O" + i;
                 
-                // Request for bonding to the Server through the Modem
-                request(socket, element);
-
                 // Log each request on the Client side
                 console.log(element + ", request, " + console.getTimestamp());
+
+                // Request for bonding to the Server through the Modem
+                request(socket, element);
             }
         }
         catch (Exception e) {
@@ -61,7 +61,10 @@ public class Oxygen implements Runnable, Modem {
         // Ask the user for the number of Oxygens
         int oxygens = new Console().input("Enter the number of Oxygen atoms: ").nextInt();
 
+        // Use Default Count if -1
+        if (oxygens == -1) new Oxygen().run();
+
         // Create a new Oxygen Client
-        new Oxygen(oxygens).run();
+        else new Oxygen(oxygens).run();
     }
 }

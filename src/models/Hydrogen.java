@@ -40,11 +40,11 @@ public class Hydrogen implements Runnable, Modem {
             for (int i = 1; i <= this.hydrogens; i++) {
                 String element = "H" + i;
 
-                // Request for bonding to the Server through the Modem
-                request(socket, element);
-                
                 // Log each request on the Client side
                 console.log(element + ", request, " + console.getTimestamp());
+
+                // Request for bonding to the Server through the Modem
+                request(socket, element);
             }
         }
         catch (Exception e) {
@@ -61,7 +61,10 @@ public class Hydrogen implements Runnable, Modem {
         // Ask the user for the number of Hydrogens
         int hydrogens = new Console().input("Enter the number of Hydrogen atoms: ").nextInt();
 
+        // Use Default Count if -1
+        if (hydrogens == -1) new Hydrogen().run();
+
         // Create a new Hydrogen Client
-        new Hydrogen(hydrogens).run();
+        else new Hydrogen(hydrogens).run();
     }
 }
