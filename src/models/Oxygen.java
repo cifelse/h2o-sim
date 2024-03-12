@@ -34,12 +34,17 @@ public class Oxygen implements Runnable, Modem {
             Socket socket = new Socket(HOSTNAME, Server.OXYGEN_PORT);
 
             // Listen to any response from the Server
-            listen(socket, console);
+            console.listen(socket);
 
             // Submit all Oxygens to the Server
             for (int i = 1; i <= this.oxygens; i++) {
-                System.out.println("O" + i + ", request, " + console.getTimestamp());
-                broadcast(socket, "O" + i);
+                String element = "O" + i;
+                
+                // Request for bonding to the Server through the Modem
+                request(socket, element);
+
+                // Log each request on the Client side
+                console.log(element + ", request, " + console.getTimestamp());
             }
         }
         catch (Exception e) {

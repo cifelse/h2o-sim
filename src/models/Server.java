@@ -1,10 +1,8 @@
 package models;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.concurrent.SynchronousQueue;
+import java.util.ArrayList;
 
 /**
  * The Server Class that is responsible in handling the Oxygen and Hydrogen atoms
@@ -18,59 +16,74 @@ public class Server implements Modem {
     public static final int HYDROGEN_PORT = 8000;
 
     // Create a new Console
-    private final Console console = new Console(NAME);
+    private final Console console;
 
     // Create a Queue for the Oxygens
-    private final SynchronousQueue<Socket> oxygen = new SynchronousQueue<Socket>();
+    private ArrayList<Element> oxygens;
 
     // Create a Queue for the Hydrogens
-    private final SynchronousQueue<Socket> hydrogen = new SynchronousQueue<Socket>();
+    private ArrayList<Element> hydrogens;
 
     /**
      * Default Server Constructor
      */
     public Server () throws Exception {
+        // Create a new Console
+        this.console = new Console(NAME);
+
+        // Instantiate Elements
+        this.hydrogens = new ArrayList<Element>();
+        this.oxygens = new ArrayList<Element>();
+
         // Start the Oxygen Handler
-        new Thread(new OxygenHandler()).start();
+        new Thread(new OxygenHandler(Server.OXYGEN_PORT)).start();
         // Start the Hydrogen Handler
-        new Thread(new HydrogenHandler()).start();
+        new Thread(new HydrogenHandler(Server.HYDROGEN_PORT)).start();
     }
 
     /**
      * The Class for handling Oxygen requests
      */
     private class OxygenHandler implements Runnable {
-        // Own Server Socket at Port 12345
+        // Server Socket
         private ServerSocket serverSocket;
+        // Port
+        private int port;
 
         /**
          * Default OxygenHandler Constructor
          * @throws Exception
          */
-        public OxygenHandler() throws Exception {
-            this.serverSocket = new ServerSocket(Server.OXYGEN_PORT);
+        public OxygenHandler(int port) throws Exception {
+            this.port = port;
         }
 
         @Override
         public void run() {
-            while (true) {
-                try {
-                    console.log("Listening for Oxygen atoms at port %d.", Server.OXYGEN_PORT);
+            try {
+                this.serverSocket = new ServerSocket(this.port);
 
-                    Socket socket = this.serverSocket.accept();
+                // Accept new Hydrogen Clients
+                console.log("Listening for new Oxygen atoms at port %d.", this.port);
 
-                    DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                Socket socket = this.serverSocket.accept();
 
-                    broadcast(out, NAME, "Request received. Wait for bonding.");
+                // Send Confirmation
+                broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
+                
+                while (true) {
+                    // Receive the Element name
+                    String element = receive(socket);
 
-                    // Add the oxygen to the queue
-                    synchronized (oxygen) {
-                        oxygen.add(socket);
-                    }
+                    // Add the element to the ArrayList
+                    oxygens.add(new Element(element));
+
+                    // Log the Request
+                    console.log(element + ", request, " + console.getTimestamp());
                 }
-                catch (Exception e) {
-                    console.log(e);
-                }
+            }
+            catch (Exception e) {
+                console.log(e);
             }
         }
     }
@@ -79,37 +92,44 @@ public class Server implements Modem {
      * The Class for handling Hydrogen requests
      */
     private class HydrogenHandler implements Runnable {
-        // Own Server Socket at Port 8000
+        // Server Socket
         private ServerSocket serverSocket;
+        // Port
+        private int port;
 
         /**
          * Default HydrogenHandler Constructor
-         * @throws Exception
          */
-        public HydrogenHandler() throws Exception {
-            this.serverSocket = new ServerSocket(Server.HYDROGEN_PORT);
+        public HydrogenHandler(int port) {
+            this.port = port;
         }
 
         @Override
         public void run() {
-            while (true) {
-                try {
-                    console.log("Listening for Hydrogen atoms at port %d.", Server.HYDROGEN_PORT);
+            try {
+                this.serverSocket = new ServerSocket(this.port);
 
-                    Socket socket = this.serverSocket.accept();
+                // Accept new Hydrogen Clients
+                console.log("Listening for new Hydrogen atoms at port %d.", this.port);
 
-                    DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+                Socket socket = this.serverSocket.accept();
 
-                    broadcast(out, NAME, "Request received. Wait for bonding.");
+                // Send Confirmation
+                broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
 
-                    // Add the hydrogen to the queue
-                    synchronized (hydrogen) {
-                        hydrogen.add(socket);
-                    }
+                while (true) {
+                    // Receive the Element name
+                    String element = receive(socket);
+
+                    // Add the element to the ArrayList
+                    hydrogens.add(new Element(element));
+
+                    // Log the Request
+                    console.log(element + ", request, " + console.getTimestamp());
                 }
-                catch (Exception e) {
-                    console.log(e);
-                }
+            }
+            catch (Exception e) {
+                console.log(e);
             }
         }
     }
