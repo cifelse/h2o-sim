@@ -264,8 +264,10 @@ public class Console {
      */
     public void log(Object value) {
         if (this.headers.isEmpty()) {
-            if (value instanceof String)
-                System.out.printf("%s\n", formatMessage((String) value));
+            if (value instanceof String) {
+                String _value = (String) value;
+                if (!_value.isEmpty()) System.out.printf("%s\n", formatMessage(_value));
+            }
             else
                 System.out.println(value);
         }
@@ -279,7 +281,7 @@ public class Console {
      * Logs the values of an ArrayList
      * @param al - ArrayList
      */
-    public void log(ArrayList<Integer> al) {
+    public void log(ArrayList<Object> al) {
         String arrayString = al.stream().map(Object::toString).collect(Collectors.joining(", "));
 
         if (this.headers.isEmpty()) {
