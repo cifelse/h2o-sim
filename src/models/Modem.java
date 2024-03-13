@@ -12,10 +12,15 @@ public interface Modem {
      * @param alias - The alias of the user
      * @throws Exception
      */
-    default public void broadcast(Socket socket, String message, String alias) throws Exception {
-        DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-        out.writeUTF("[" + alias + "]: " + message);
-        out.flush();
+    default public void broadcast(Socket socket, String message, String alias) {
+        try {
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.writeUTF("[" + alias + "]: " + message);
+            out.flush();
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     /**
@@ -24,10 +29,15 @@ public interface Modem {
      * @param message - The message to broadcast
      * @throws Exception
      */
-    default public void broadcast(Socket socket, String message) throws Exception {
-        DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-        out.writeUTF(message);
-        out.flush();
+    default public void broadcast(Socket socket, String message) {
+        try {
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            out.writeUTF(message);
+            out.flush();
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     /**
