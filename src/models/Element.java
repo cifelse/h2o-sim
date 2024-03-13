@@ -3,14 +3,14 @@ package models;
 import java.net.Socket;
 
 /**
- * A special type of ArrayList made for Elements or Atoms
+ * The Element class for containing either Hydrogen or Oxygen with their respective client sockets
  */
 public class Element implements Modem {
     // Element Symbol
     private final String name;
 
     // The Requester
-    private Socket requester;
+    private final Socket requester;
 
     /**
      * Create an element with its name and requesters
@@ -29,14 +29,16 @@ public class Element implements Modem {
         return this.requester;
     }
 
-    public String bond(String timestamp) {
-        String message = "[Server]: " + name + ", bonded, " + timestamp;
+    public String bond() {
+        String message = this.name + ", bonded, " + Console.getTimeStamp();
+
         try {
-            broadcast(requester, message);
+            broadcast(this.requester, message, Server.NAME);
         }
         catch (Exception e) {
             System.out.println(e);
         }
+
         return message;
     }
 }
