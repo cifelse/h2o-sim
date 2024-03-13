@@ -353,6 +353,7 @@ public class Console {
             try {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 
+                // Read all messages until the endSignal
                 String message;
                 do {
                     message = in.readUTF();
@@ -382,6 +383,7 @@ public class Console {
             try {
                 DataInputStream in = new DataInputStream(socket.getInputStream());
                 
+                // Read all messages until the endSignal
                 String message;
                 do {
                     message = in.readUTF();
