@@ -16,6 +16,7 @@ public class Server implements Modem {
     // Set the port numbers
     public static final int OXYGEN_PORT = 12345;
     public static final int HYDROGEN_PORT = 8000;
+    public static final int THREADS = 32;
 
     // Create a new Console
     private final Console console;
@@ -47,20 +48,21 @@ public class Server implements Modem {
      * The Centralized Function to Bond Hydrogens and Oxygens
      * @throws Exception
      */
-    public void bond() throws Exception {
-        // If Hydrogens and Oxygens are not enough, abort
-        if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return;
-
+    public void bond() {
         synchronized(this.hydrogens) {
-            Element h1 = this.hydrogens.poll();
-            console.log(h1.bond(console.getTimestamp()));
-            Element h2 = this.hydrogens.poll();
-            console.log(h2.bond(console.getTimestamp()));
-        }
-        
-        synchronized(this.oxygens) {
-            Element o = this.oxygens.poll();
-            console.log(o.bond(console.getTimestamp()));
+            synchronized(this.oxygens) {
+                // If Hydrogens and Oxygens are not enough, abort
+                if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return;
+            
+                Element h1 = this.hydrogens.poll();
+                console.log(h1.bond());
+
+                Element h2 = this.hydrogens.poll();
+                console.log(h2.bond());
+
+                Element o = this.oxygens.poll();
+                console.log(o.bond());
+            }        
         }
     }
 
@@ -85,7 +87,7 @@ public class Server implements Modem {
         @Override
         public void run() {
             while (true) try {
-                // Accept new Hydrogen Clients
+                // Accept new Oxygen Clients
                 console.log("Listening for new Oxygen atoms at port %d.", this.port);
 
                 Socket socket = this.serverSocket.accept();
@@ -104,7 +106,18 @@ public class Server implements Modem {
                     console.log(element + ", request, " + console.getTimestamp());
 
                     // Check if bonding is possible
-                    bond();
+                    Thread thread = new Thread(() -> {
+                        try {
+                            bond();
+                        }
+                        catch (Exception e) {
+                            console.log(e);
+                        }
+                    });
+                    
+                    thread.start();
+
+                    thread.join();
                 }
                 catch (Exception e) {
                     if (e instanceof EOFException) 
@@ -159,8 +172,18 @@ public class Server implements Modem {
                     // Log the Request
                     console.log(element + ", request, " + console.getTimestamp());
 
-                    // Check if bonding is possible
-                    bond();
+                    Thread thread = new Thread(() -> {
+                        try {
+                            bond();
+                        }
+                        catch (Exception e) {
+                            console.log(e);
+                        }
+                    });
+
+                    thread.start();
+
+                    thread.join();
                 }
                 catch (Exception e) {
                     if (e instanceof EOFException) 
