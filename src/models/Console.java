@@ -101,7 +101,22 @@ public class Console {
     /**
      * Return the current timestamp in String with a certain pattern
      */
-    public String getTimeStamp(String pattern) {
+    public String getTimestamp(String pattern) {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern));
+    }
+
+    /**
+     * Return the current timestamp in String
+     * @return timestamp
+     */
+    public static String getTimeStamp() {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-M-d HH:mm:ss"));
+    }
+
+    /**
+     * Return the current timestamp in String with a certain pattern
+     */
+    public static String getTimeStamp(String pattern) {
         return LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern));
     }
 
