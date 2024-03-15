@@ -106,18 +106,7 @@ public class Server implements Modem {
                     console.log(element + ", request, " + console.getTimestamp());
 
                     // Check if bonding is possible
-                    Thread thread = new Thread(() -> {
-                        try {
-                            bond();
-                        }
-                        catch (Exception e) {
-                            console.log(e);
-                        }
-                    });
-                    
-                    thread.start();
-
-                    thread.join();
+                    bond();
                 }
                 catch (Exception e) {
                     if (e instanceof EOFException) 
@@ -172,18 +161,7 @@ public class Server implements Modem {
                     // Log the Request
                     console.log(element + ", request, " + console.getTimestamp());
 
-                    Thread thread = new Thread(() -> {
-                        try {
-                            bond();
-                        }
-                        catch (Exception e) {
-                            console.log(e);
-                        }
-                    });
-
-                    thread.start();
-
-                    thread.join();
+                    bond();
                 }
                 catch (Exception e) {
                     if (e instanceof EOFException) 
