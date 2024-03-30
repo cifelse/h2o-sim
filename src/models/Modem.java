@@ -52,18 +52,16 @@ public interface Modem {
      * @param element - The Element
      * @throws Exception
      */
-    default public boolean request(Socket socket, String element) {
+    default public void request(Socket socket, String element) {
         try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
             out.writeInt(bytes.length); // Write the length of the element
             out.write(bytes);
             out.flush();
-            return true;
         }
         catch (Exception e) {
             System.out.println(e);
-            return false;
         }
     }
 
