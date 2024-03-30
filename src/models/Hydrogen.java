@@ -34,7 +34,10 @@ public class Hydrogen implements Runnable, Modem {
             Socket socket = new Socket(HOSTNAME, Server.HYDROGEN_PORT);
 
             // Wait for Confirmation first
-            receive(socket);
+            console.log(receive(socket));
+
+            // Broadcast the total number of Hydrogens to the Server
+            broadcast(socket, this.hydrogens);
 
             // Listen to any response from the Server
             console.listen(socket, "H" + this.hydrogens);

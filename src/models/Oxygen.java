@@ -34,7 +34,10 @@ public class Oxygen implements Runnable, Modem {
             Socket socket = new Socket(HOSTNAME, Server.OXYGEN_PORT);
 
             // Wait for Confirmation first
-            receive(socket);
+            console.log(receive(socket));
+
+            // Broadcast the total number of Hydrogens to the Server
+            broadcast(socket, this.oxygens);
             
             // Listen to any response from the Server
             console.listen(socket, "O" + this.oxygens);

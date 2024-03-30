@@ -16,7 +16,6 @@ public class Server implements Modem {
     // Set the port numbers
     public static final int OXYGEN_PORT = 12345;
     public static final int HYDROGEN_PORT = 8000;
-    public static final int THREADS = 32;
 
     // Create a new Console
     private final Console console;
@@ -26,6 +25,10 @@ public class Server implements Modem {
 
     // Create a Queue for the Hydrogens
     private Queue<Element> hydrogens;
+
+    private int oxygenRequest;
+
+    private int hydrogenRequest;
 
     /**
      * Default Server Constructor
@@ -38,6 +41,10 @@ public class Server implements Modem {
         this.hydrogens = new LinkedList<Element>();
         this.oxygens = new LinkedList<Element>();
 
+        // Initialize the Requests
+        this.oxygenRequest = 0;
+        this.hydrogenRequest = 0;
+
         // Start the Oxygen Handler
         new Thread(new OxygenHandler(Server.OXYGEN_PORT)).start();
         // Start the Hydrogen Handler
@@ -48,21 +55,33 @@ public class Server implements Modem {
      * The Centralized Function to Bond Hydrogens and Oxygens
      * @throws Exception
      */
-    public void bond() {
-        synchronized(this.hydrogens) {
-            synchronized(this.oxygens) {
-                // If Hydrogens and Oxygens are not enough, abort
-                if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return;
-            
-                Element h1 = this.hydrogens.poll();
-                console.log(h1.bond());
+    public boolean bond(String id) {
+        synchronized(this) {
+            // If Hydrogens and Oxygens are not enough, abort
+            if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return false;
+        
+            Element h1 = this.hydrogens.poll();
+            console.log(h1.bond());
 
-                Element h2 = this.hydrogens.poll();
-                console.log(h2.bond());
+            Element h2 = this.hydrogens.poll();
+            console.log(h2.bond());
 
-                Element o = this.oxygens.poll();
-                console.log(o.bond());
-            }        
+            hydrogenRequest -= 2;
+
+            Element o = this.oxygens.poll();
+            console.log(o.bond());
+
+            oxygenRequest -= 1;
+
+            if (id == "HYDROGEN" && hydrogenRequest == 0) {
+                return true;
+            }
+            else if (id == "OXYGEN" && oxygenRequest == 0)  {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     }
 
@@ -86,7 +105,8 @@ public class Server implements Modem {
 
         @Override
         public void run() {
-            while (true) try {
+            // while (true) 
+            try {
                 // Accept new Oxygen Clients
                 console.log("Listening for new Oxygen atoms at port %d.", this.port);
 
@@ -94,7 +114,10 @@ public class Server implements Modem {
 
                 // Send Confirmation
                 broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
-                
+
+                // Receive the total number of Oxygens
+                oxygenRequest = Integer.parseInt(receive(socket));
+
                 while (!socket.isClosed()) try {
                     // Receive the Element name
                     String element = receive(socket);
@@ -106,20 +129,22 @@ public class Server implements Modem {
                     console.log(element + ", request, " + console.getTimestamp());
 
                     // Check if bonding is possible
-                    bond();
+                    boolean flag = bond("OXYGEN");
+
+                    if (flag) {
+                        broadcast(socket, "EOB");
+                        socket.close();
+                    }
                 }
                 catch (Exception e) {
-                    if (e instanceof EOFException) 
-                        console.log("Oxygen Client disconnected.");
-                    else 
-                        console.log(e);
-
                     if (!socket.isClosed()) socket.close();
                 }
             }
             catch (Exception e) {
                 console.log(e);
             }
+
+            console.log("Oxygen Client disconnected.");
         }
     }
 
@@ -142,7 +167,8 @@ public class Server implements Modem {
 
         @Override
         public void run() {
-            while (true) try {
+            // while (true) 
+            try {
                 // Accept new Hydrogen Clients
                 console.log("Listening for new Hydrogen atoms at port %d.", this.port);
 
@@ -151,6 +177,9 @@ public class Server implements Modem {
                 // Send Confirmation
                 broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
 
+                // Receive the total number of Oxygens
+                hydrogenRequest = Integer.parseInt(receive(socket));
+                
                 while (!socket.isClosed()) try {
                     // Receive the Element name
                     String element = receive(socket);
@@ -160,21 +189,24 @@ public class Server implements Modem {
 
                     // Log the Request
                     console.log(element + ", request, " + console.getTimestamp());
+                    
+                    // Check if bonding is possible
+                    boolean flag = bond("HYDROGEN");
 
-                    bond();
+                    if (flag) {
+                        broadcast(socket, "EOB");
+                        socket.close();
+                    }
                 }
                 catch (Exception e) {
-                    if (e instanceof EOFException) 
-                        console.log("Hydrogen Client disconnected.");
-                    else 
-                        console.log(e);
-
                     if (!socket.isClosed()) socket.close();
                 }
             }
             catch (Exception e) {
                 console.log(e);
             }
+
+            console.log("Hydrogen Client disconnected.");
         }
     }
 
