@@ -16,7 +16,6 @@ public class Server implements Modem {
     // Set the port numbers
     public static final int OXYGEN_PORT = 12345;
     public static final int HYDROGEN_PORT = 8000;
-    public static final int THREADS = 32;
 
     // Create a new Console
     private final Console console;
@@ -49,20 +48,18 @@ public class Server implements Modem {
      * @throws Exception
      */
     public void bond() {
-        synchronized(this.hydrogens) {
-            synchronized(this.oxygens) {
-                // If Hydrogens and Oxygens are not enough, abort
-                if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return;
-            
-                Element h1 = this.hydrogens.poll();
-                console.log(h1.bond());
+        synchronized(this) {
+            // If Hydrogens and Oxygens are not enough, abort
+            if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return;
+        
+            Element h1 = this.hydrogens.poll();
+            console.log(h1.bond());
 
-                Element h2 = this.hydrogens.poll();
-                console.log(h2.bond());
+            Element h2 = this.hydrogens.poll();
+            console.log(h2.bond());
 
-                Element o = this.oxygens.poll();
-                console.log(o.bond());
-            }        
+            Element o = this.oxygens.poll();
+            console.log(o.bond());   
         }
     }
 
@@ -161,6 +158,7 @@ public class Server implements Modem {
                     // Log the Request
                     console.log(element + ", request, " + console.getTimestamp());
 
+                    // Check if bonding is possible
                     bond();
                 }
                 catch (Exception e) {
