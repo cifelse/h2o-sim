@@ -3,6 +3,7 @@ package models;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public interface Modem {
     /**
@@ -15,7 +16,10 @@ public interface Modem {
     default public void broadcast(Socket socket, String message, String alias) {
         try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeUTF("[" + alias + "]: " + message);
+            String fullMessage = "[" + alias + "]: " + message;
+            byte[] bytes = fullMessage.getBytes(StandardCharsets.UTF_8);
+            out.writeInt(bytes.length); // Write the length of the message
+            out.write(bytes);
             out.flush();
         }
         catch (Exception e) {
@@ -32,7 +36,9 @@ public interface Modem {
     default public void broadcast(Socket socket, String message) {
         try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeUTF(message);
+            byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+            out.writeInt(bytes.length); // Write the length of the message
+            out.write(bytes);
             out.flush();
         }
         catch (Exception e) {
@@ -49,7 +55,9 @@ public interface Modem {
     default public boolean request(Socket socket, String element) {
         try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-            out.writeUTF(element);
+            byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
+            out.writeInt(bytes.length); // Write the length of the element
+            out.write(bytes);
             out.flush();
             return true;
         }
@@ -67,6 +75,9 @@ public interface Modem {
      */
     default public String receive(Socket socket) throws Exception {
         DataInputStream in = new DataInputStream(socket.getInputStream());
-        return in.readUTF();
+        int length = in.readInt(); // Read the length of the incoming message
+        byte[] bytes = new byte[length];
+        in.readFully(bytes); // Read the bytes into the byte array
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 }
