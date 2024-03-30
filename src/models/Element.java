@@ -41,4 +41,17 @@ public class Element implements Modem {
 
         return message;
     }
+
+    public String bond(int number) {
+        String message = this.name + ", bonded, " + Console.getTimeStamp();
+
+        try {
+            broadcast(this.requester, message + "\nRemaining: " + number, Server.NAME);
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
+
+        return message;
+    }
 }
