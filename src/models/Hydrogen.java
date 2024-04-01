@@ -34,24 +34,24 @@ public class Hydrogen implements Runnable, Modem {
             Socket socket = new Socket(HOSTNAME, Server.HYDROGEN_PORT);
 
             // Wait for Confirmation first
-            receive(socket);
+            console.log(receive(socket));
 
             // Listen to any response from the Server
-            console.listen(socket, "H" + this.hydrogens);
-
-            // The Flag to check if the Server is still accepting requests
-            boolean flag = true;
+            console.listen(socket, this.hydrogens);
 
             // Submit all Hydrogens to the Server
-            for (int i = 1; i <= this.hydrogens && flag; i++) {
+            for (int i = 1; i <= this.hydrogens; i++) {
                 String element = "H" + i;
 
                 // Log each request on the Client side
                 console.log(element + ", request, " + console.getTimestamp());
 
                 // Request for bonding to the Server through the Modem
-                flag = request(socket, element);
+                request(socket, element);
             }
+
+            // Send EOF to the Server
+            broadcast(socket, "EOF");
         }
         catch (Exception e) {
             System.out.println(e);
