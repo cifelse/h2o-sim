@@ -14,7 +14,7 @@ public interface Modem {
      * @throws Exception
      */
     default public void broadcast(Socket socket, String message, String alias) {
-        try {
+        if (!socket.isClosed()) try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             String fullMessage = "[" + alias + "]: " + message;
             byte[] bytes = fullMessage.getBytes(StandardCharsets.UTF_8);
@@ -23,7 +23,7 @@ public interface Modem {
             out.flush();
         }
         catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -34,7 +34,7 @@ public interface Modem {
      * @throws Exception
      */
     default public void broadcast(Socket socket, String message) {
-        try {
+        if (!socket.isClosed()) try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
             out.writeInt(bytes.length); // Write the length of the message
@@ -42,7 +42,7 @@ public interface Modem {
             out.flush();
         }
         catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -53,7 +53,7 @@ public interface Modem {
      * @throws Exception
      */
     default public void request(Socket socket, String element) {
-        try {
+        if (!socket.isClosed()) try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
             out.writeInt(bytes.length); // Write the length of the element
@@ -61,7 +61,7 @@ public interface Modem {
             out.flush();
         }
         catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 
@@ -71,11 +71,17 @@ public interface Modem {
      * @return the Element name
      * @throws Exception
      */
-    default public String receive(Socket socket) throws Exception {
-        DataInputStream in = new DataInputStream(socket.getInputStream());
-        int length = in.readInt(); // Read the length of the incoming message
-        byte[] bytes = new byte[length];
-        in.readFully(bytes); // Read the bytes into the byte array
-        return new String(bytes, StandardCharsets.UTF_8);
+    default public String receive(Socket socket) {
+        if (!socket.isClosed()) try {
+            DataInputStream in = new DataInputStream(socket.getInputStream());
+            int length = in.readInt(); // Read the length of the incoming message
+            byte[] bytes = new byte[length];
+            in.readFully(bytes); // Read the bytes into the byte array
+            return new String(bytes, StandardCharsets.UTF_8);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -9,6 +9,7 @@ package models;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -361,6 +362,51 @@ public class Console {
                 } while (!message.contains(endSignal));
                 
                 log("All elements have bonded.");
+                
+                if (!socket.isClosed()) socket.close();
+            }
+            catch (Exception e) {
+                if (e instanceof EOFException)
+                    log("Server died.");
+                else
+                    log(e);       
+            }
+            
+        }).start();
+    }
+
+    /**
+     * Listen to a socket for all String outputs
+     * @param socket - Socket to listen
+     * @param total - total number of elements to bond
+     */
+    public void listen(Socket socket, int total) {
+        new Thread(() -> {
+            try {
+                int sen = total;
+
+                DataInputStream in = new DataInputStream(socket.getInputStream());
+                
+                // Read all messages until the endSignal
+                String message;
+                do {
+                    int length = in.readInt(); // Read the length of the incoming message
+
+                    byte[] bytes = new byte[length];
+
+                    in.readFully(bytes); // Read the bytes into the byte array
+
+                    message = new String(bytes, StandardCharsets.UTF_8);
+
+                    log(message);
+                    
+                    if (message.contains("bonded")) {
+                        sen--;
+                        // log(sen + " elements left.");
+                    }
+                } while (sen > 0);
+                
+                log("All " + total + " elements have bonded.");
                 
                 if (!socket.isClosed()) socket.close();
             }
