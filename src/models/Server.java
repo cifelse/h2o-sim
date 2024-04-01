@@ -1,6 +1,5 @@
 package models;
 
-import java.io.EOFException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -96,26 +95,31 @@ public class Server implements Modem {
                     // Receive the Element name
                     String element = receive(socket);
 
-                    // Add the element to the ArrayList
-                    oxygens.add(new Element(element, socket));
+                    if (!element.contains("EOF")) {
+                        // Add the element to the ArrayList
+                        oxygens.add(new Element(element, socket));
 
-                    // Log the Request
-                    console.log(element + ", request, " + console.getTimestamp());
+                        // Log the Request
+                        console.log(element + ", request, " + console.getTimestamp());
 
-                    // Check if bonding is possible
-                    bond();
+                        // Check if bonding is possible
+                        bond();
+                    }
+                    else {
+                        synchronized(oxygens) {
+                            while (!oxygens.isEmpty()) bond();
+                        }
+                        socket.close();
+                        console.log("Oxygen Client disconnected.");
+                    }
                 }
                 catch (Exception e) {
-                    if (e instanceof EOFException) 
-                        console.log("Oxygen Client disconnected.");
-                    else 
-                        console.log(e);
-
+                    e.printStackTrace();
                     if (!socket.isClosed()) socket.close();
                 }
             }
             catch (Exception e) {
-                console.log(e);
+                e.printStackTrace();
             }
         }
     }
@@ -152,26 +156,31 @@ public class Server implements Modem {
                     // Receive the Element name
                     String element = receive(socket);
 
-                    // Add the element to the ArrayList
-                    hydrogens.add(new Element(element, socket));
+                    if (!element.contains("EOF")) {
+                        // Add the element to the ArrayList
+                        hydrogens.add(new Element(element, socket));
 
-                    // Log the Request
-                    console.log(element + ", request, " + console.getTimestamp());
+                        // Log the Request
+                        console.log(element + ", request, " + console.getTimestamp());
 
-                    // Check if bonding is possible
-                    bond();
+                        // Check if bonding is possible
+                        bond();
+                    }
+                    else {
+                        synchronized(hydrogens) {
+                            while (!hydrogens.isEmpty()) bond();
+                        }
+                        socket.close();
+                        console.log("Hydrogen Client disconnected.");
+                    }
                 }
                 catch (Exception e) {
-                    if (e instanceof EOFException) 
-                        console.log("Hydrogen Client disconnected.");
-                    else 
-                        console.log(e);
-
+                    e.printStackTrace();
                     if (!socket.isClosed()) socket.close();
                 }
             }
             catch (Exception e) {
-                console.log(e);
+                e.printStackTrace();
             }
         }
     }
