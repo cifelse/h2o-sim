@@ -47,6 +47,26 @@ public interface Modem {
     }
 
     /**
+     * The method to broadcast a message to the sockets
+     * @param socket - the socket of the receiver
+     * @param number - The number in int to broadcast
+     * @throws Exception
+     */
+    default public void broadcast(Socket socket, int number) {
+        if (!socket.isClosed()) try {
+            String message = String.valueOf(number);
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            byte[] bytes = message.getBytes(StandardCharsets.UTF_8);
+            out.writeInt(bytes.length); // Write the length of the message
+            out.write(bytes);
+            out.flush();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Request an Element to be bonded to the Server
      * @param socket - the socket of the server
      * @param element - The Element
