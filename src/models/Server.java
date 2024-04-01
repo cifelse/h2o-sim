@@ -60,15 +60,15 @@ public class Server implements Modem {
             if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return current + 1;
         
             Element h1 = this.hydrogens.poll();
-            console.log(h1.bond());
+            if (h1 != null) console.log(h1.bond());
 
             Element h2 = this.hydrogens.poll();
-            console.log(h2.bond());
+            if (h2 != null) console.log(h2.bond());
 
             hydrogenExpected -= 2;
 
             Element o = this.oxygens.poll();
-            console.log(o.bond());
+            if (o != null) console.log(o.bond());
 
             oxygenExpected--;
 
