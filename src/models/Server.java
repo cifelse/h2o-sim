@@ -130,11 +130,11 @@ public class Server implements Modem {
                     }
                     else {
                         int safety = 0;
-                        while (oxygenExpected > 0 && (safety < 10000)) {
+                        while (oxygenExpected > 0) {
                             safety = bond(safety);
 
                             // Delete this before submission
-                            if (safety >= 9999) console.log("Oxygen: %d | Hydrogen: %d", oxygenExpected, hydrogenExpected);
+                            // if (safety >= 9999) console.log("Oxygen: %d | Hydrogen: %d", oxygenExpected, hydrogenExpected);
                         }
                         
                         socket.close();
@@ -201,11 +201,11 @@ public class Server implements Modem {
                     }
                     else {
                         int safety = 0;
-                        while (hydrogenExpected > 0 && (safety < 10000)) {
+                        while (hydrogenExpected > 0) {
                             safety = bond(safety);
 
                             // Delete this before submission
-                            if (safety >= 9999) console.log("Oxygen: %d | Hydrogen: %d", oxygenExpected, hydrogenExpected);
+                            // if (safety >= 9999) console.log("Oxygen: %d | Hydrogen: %d", oxygenExpected, hydrogenExpected);
                         }
 
                         socket.close();
