@@ -51,12 +51,13 @@ public class Server implements Modem {
 
     /**
      * The Centralized Function to Bond Hydrogens and Oxygens
+     * @param current - The current number of bonds
      * @throws Exception
      */
-    public void bond() {
+    public int bond(int current) {
         synchronized(this) {
             // If Hydrogens and Oxygens are not enough, abort
-            if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return;
+            if (this.hydrogens.size() < 2 || this.oxygens.size() < 1) return current + 1;
         
             Element h1 = this.hydrogens.poll();
             console.log(h1.bond());
@@ -72,6 +73,8 @@ public class Server implements Modem {
             oxygenExpected--;
 
             if (hydrogenExpected % 500 == 0) System.gc();
+
+            return 0;
         }
     }
 
@@ -111,22 +114,27 @@ public class Server implements Modem {
                     // Receive the Element name
                     String element = receive(socket);
 
+                    Socket newSocket = socket;
+
                     if (!element.contains("EOF")) {
                         // Add the element to the ArrayList
                         synchronized (oxygens) {
-                            oxygens.add(new Element(element, socket));
+                            oxygens.add(new Element(element, newSocket));
 
                             // Log the Request
                             console.log(element + ", request, " + console.getTimestamp());
 
                             // Check if bonding is possible
-                            bond();
+                            bond(0);
                         }
                     }
                     else {
-                        while (oxygenExpected > 0) {
-                            bond();
-                            if (oxygenExpected < 100) console.log("Oxygen Expected: %d", oxygenExpected);
+                        int safety = 0;
+                        while (oxygenExpected > 0 && (safety < 10000)) {
+                            safety = bond(safety);
+
+                            // Delete this before submission
+                            if (safety >= 9999) console.log("Oxygen: %d | Hydrogen: %d", oxygenExpected, hydrogenExpected);
                         }
                         
                         socket.close();
@@ -188,13 +196,16 @@ public class Server implements Modem {
                             console.log(element + ", request, " + console.getTimestamp());
 
                             // Check if bonding is possible
-                            if (hydrogens.size() >= 2) bond();
+                            if (hydrogens.size() >= 2) bond(0);
                         }
                     }
                     else {
-                        while (hydrogenExpected > 0) {
-                            bond();
-                            if (hydrogenExpected < 100) console.log("Hydrogen Expected: %d", hydrogenExpected);
+                        int safety = 0;
+                        while (hydrogenExpected > 0 && (safety < 10000)) {
+                            safety = bond(safety);
+
+                            // Delete this before submission
+                            if (safety >= 9999) console.log("Oxygen: %d | Hydrogen: %d", oxygenExpected, hydrogenExpected);
                         }
 
                         socket.close();
