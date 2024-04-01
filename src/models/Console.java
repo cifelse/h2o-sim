@@ -174,7 +174,7 @@ public class Console {
     public void clear()  {
         try {
             System.out.print("\033[H\033[2J");
-            Runtime.getRuntime().exec("clear");
+            // Runtime.getRuntime().exec("clear");
         }
         catch (Exception e) {
             System.out.println(e);
