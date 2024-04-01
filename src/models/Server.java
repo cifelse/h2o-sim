@@ -70,6 +70,8 @@ public class Server implements Modem {
             console.log(o.bond());
 
             oxygenExpected--;
+
+            if (hydrogenExpected % 500 == 0) System.gc();
         }
     }
 
@@ -111,16 +113,21 @@ public class Server implements Modem {
 
                     if (!element.contains("EOF")) {
                         // Add the element to the ArrayList
-                        oxygens.add(new Element(element, socket));
+                        synchronized (oxygens) {
+                            oxygens.add(new Element(element, socket));
 
-                        // Log the Request
-                        console.log(element + ", request, " + console.getTimestamp());
+                            // Log the Request
+                            console.log(element + ", request, " + console.getTimestamp());
 
-                        // Check if bonding is possible
-                        bond();
+                            // Check if bonding is possible
+                            bond();
+                        }
                     }
                     else {
-                        while (oxygenExpected > 0) bond();
+                        while (oxygenExpected > 0) {
+                            bond();
+                            if (oxygenExpected < 100) console.log("Oxygen Expected: %d", oxygenExpected);
+                        }
                         
                         socket.close();
                         console.log("Oxygen Client disconnected.");
@@ -173,18 +180,23 @@ public class Server implements Modem {
                     String element = receive(socket);
 
                     if (!element.contains("EOF")) {
-                        // Add the element to the ArrayList
-                        hydrogens.add(new Element(element, socket));
+                        synchronized(hydrogens) {
+                            // Add the element to the ArrayList
+                            hydrogens.add(new Element(element, socket));
 
-                        // Log the Request
-                        console.log(element + ", request, " + console.getTimestamp());
+                            // Log the Request
+                            console.log(element + ", request, " + console.getTimestamp());
 
-                        // Check if bonding is possible
-                        bond();
+                            // Check if bonding is possible
+                            if (hydrogens.size() >= 2) bond();
+                        }
                     }
                     else {
-                        while (hydrogenExpected > 0) bond();
-                        
+                        while (hydrogenExpected > 0) {
+                            bond();
+                            if (hydrogenExpected < 100) console.log("Hydrogen Expected: %d", hydrogenExpected);
+                        }
+
                         socket.close();
                         console.log("Hydrogen Client disconnected.");
                     }

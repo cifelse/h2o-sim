@@ -391,7 +391,7 @@ public class Console {
                 String message;
                 do {
                     int length = in.readInt(); // Read the length of the incoming message
-
+                    
                     byte[] bytes = new byte[length];
 
                     in.readFully(bytes); // Read the bytes into the byte array

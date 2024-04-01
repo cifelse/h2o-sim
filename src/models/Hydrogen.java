@@ -42,19 +42,26 @@ public class Hydrogen implements Runnable, Modem {
             // Send the Overall Count first
             broadcast(socket, this.hydrogens);
 
+            boolean hasError = false;
+
             // Submit all Hydrogens to the Server
-            for (int i = 1; i <= this.hydrogens; i++) {
+            for (int i = 1; i <= this.hydrogens && !hasError; i++) {
                 String element = "H" + i;
 
                 // Log each request on the Client side
                 console.log(element + ", request, " + console.getTimestamp());
 
                 // Request for bonding to the Server through the Modem
-                request(socket, element);
+                hasError = request(socket, element);
             }
 
             // Send EOF to the Server
-            broadcast(socket, "EOF");
+            if (!hasError) broadcast(socket, "EOF");
+
+            else {
+                console.log("An error occurred. Closing the connection.");
+                if (!socket.isClosed()) socket.close();
+            }
         }
         catch (Exception e) {
             System.out.println(e);

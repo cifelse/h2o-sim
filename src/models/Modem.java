@@ -72,7 +72,7 @@ public interface Modem {
      * @param element - The Element
      * @throws Exception
      */
-    default public void request(Socket socket, String element) {
+    default public boolean request(Socket socket, String element) {
         if (!socket.isClosed()) try {
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
@@ -82,7 +82,9 @@ public interface Modem {
         }
         catch (Exception e) {
             e.printStackTrace();
+            return true;
         }
+        return false;
     }
 
     /**
@@ -92,16 +94,18 @@ public interface Modem {
      * @throws Exception
      */
     default public String receive(Socket socket) {
+        String message = "";
         if (!socket.isClosed()) try {
             DataInputStream in = new DataInputStream(socket.getInputStream());
             int length = in.readInt(); // Read the length of the incoming message
             byte[] bytes = new byte[length];
             in.readFully(bytes); // Read the bytes into the byte array
-            return new String(bytes, StandardCharsets.UTF_8);
+            message = new String(bytes, StandardCharsets.UTF_8);
         }
         catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
+        return message;
     }
 }

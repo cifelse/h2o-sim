@@ -41,20 +41,27 @@ public class Oxygen implements Runnable, Modem {
 
             // Send the Overall Count first
             broadcast(socket, this.oxygens);
+
+            boolean hasError = false;
             
             // Submit all Oxygens to the Server
-            for (int i = 1; i <= this.oxygens; i++) {
+            for (int i = 1; i <= this.oxygens && !hasError; i++) {
                 String element = "O" + i;
                 
                 // Log each request on the Client side
                 console.log(element + ", request, " + console.getTimestamp());
 
                 // Request for bonding to the Server through the Modem
-                request(socket, element);
+                hasError = request(socket, element);
             }
 
             // Send EOF to the Server
-            broadcast(socket, "EOF");
+            if (!hasError) broadcast(socket, "EOF");
+
+            else {
+                console.log("An error occurred. Closing the connection.");
+                if (!socket.isClosed()) socket.close();
+            }
         }
         catch (Exception e) {
             System.out.println(e);
