@@ -39,6 +39,9 @@ public class Oxygen implements Runnable, Modem {
             // Listen to any response from the Server
             console.listen(socket, this.oxygens);
 
+            // Send the Overall Count first
+            broadcast(socket, this.oxygens);
+            
             // Submit all Oxygens to the Server
             for (int i = 1; i <= this.oxygens; i++) {
                 String element = "O" + i;

@@ -39,6 +39,9 @@ public class Hydrogen implements Runnable, Modem {
             // Listen to any response from the Server
             console.listen(socket, this.hydrogens);
 
+            // Send the Overall Count first
+            broadcast(socket, this.hydrogens);
+
             // Submit all Hydrogens to the Server
             for (int i = 1; i <= this.hydrogens; i++) {
                 String element = "H" + i;

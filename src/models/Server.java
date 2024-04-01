@@ -25,6 +25,10 @@ public class Server implements Modem {
     // Create a Queue for the Hydrogens
     private Queue<Element> hydrogens;
 
+    // Expected number of Elemenets to arrive
+    int oxygenExpected;
+    int hydrogenExpected;
+
     /**
      * Default Server Constructor
      */
@@ -35,6 +39,9 @@ public class Server implements Modem {
         // Instantiate Elements
         this.hydrogens = new LinkedList<Element>();
         this.oxygens = new LinkedList<Element>();
+
+        oxygenExpected = this.hydrogens.size();
+        hydrogenExpected = this.oxygens.size();
 
         // Start the Oxygen Handler
         new Thread(new OxygenHandler(Server.OXYGEN_PORT)).start();
@@ -57,8 +64,12 @@ public class Server implements Modem {
             Element h2 = this.hydrogens.poll();
             console.log(h2.bond());
 
+            hydrogenExpected -= 2;
+
             Element o = this.oxygens.poll();
-            console.log(o.bond());   
+            console.log(o.bond());
+
+            oxygenExpected--;
         }
     }
 
@@ -91,6 +102,9 @@ public class Server implements Modem {
                 // Send Confirmation
                 broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
                 
+                // Get the Overall
+                oxygenExpected = Integer.parseInt(receive(socket));
+
                 while (!socket.isClosed()) try {
                     // Receive the Element name
                     String element = receive(socket);
@@ -106,9 +120,8 @@ public class Server implements Modem {
                         bond();
                     }
                     else {
-                        synchronized(oxygens) {
-                            while (!oxygens.isEmpty()) bond();
-                        }
+                        while (oxygenExpected > 0) bond();
+                        
                         socket.close();
                         console.log("Oxygen Client disconnected.");
                     }
@@ -152,6 +165,9 @@ public class Server implements Modem {
                 // Send Confirmation
                 broadcast(socket, "You are connected. Listening for elements.", Server.NAME);
 
+                // Get the Overall
+                hydrogenExpected = Integer.parseInt(receive(socket));
+
                 while (!socket.isClosed()) try {
                     // Receive the Element name
                     String element = receive(socket);
@@ -167,9 +183,8 @@ public class Server implements Modem {
                         bond();
                     }
                     else {
-                        synchronized(hydrogens) {
-                            while (!hydrogens.isEmpty()) bond();
-                        }
+                        while (hydrogenExpected > 0) bond();
+                        
                         socket.close();
                         console.log("Hydrogen Client disconnected.");
                     }
